@@ -62,12 +62,11 @@ local AUTOUPDATE = true
 local SCRIPT_NAME = "VeigarsSuperFunHouse"
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/LlamaBoL/BoL/master/VeigarsSuperFunHouse.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = LIB_PATH.."VeigarsSuperFunHouse.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-
+local VERSION_PATH = "LlamaBoL/BoL/master/Version"..SCRIPT_NAME..".version"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
 local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
-
+PrintChat(""..LIB_PATH)
 
 
 if FileExist(SOURCELIB_PATH) then
@@ -78,13 +77,13 @@ else
 end
 
 if AUTOUPDATE then
-  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/LlamaBoL/BoL/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"):CheckUpdate()
+  SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, VERSION_PATH):CheckUpdate()
 end
 
 local libDownload = Require("SourceLib")
 libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
 libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
-libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/Common/comboLib.lua")
+libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/master/Common/comboLib.lua")
 libDownload:Check()
 
 if libDownload.downloadNeeded == true then return end
@@ -120,8 +119,8 @@ function OnLoad()
   ----------------
   --[[  code  ]]--
   ----------------
-  require"comboLib"
-  require"VPrediction"
+  --require"comboLib"
+  --require"VPrediction"
   stealTarget = nil
   comboArray = {}
   oldname = "default"

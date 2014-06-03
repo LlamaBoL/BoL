@@ -1,4 +1,4 @@
-local version = 1.3
+local version = 1.2
 --[[  comboLib.lua v1.3
  
          by llama
@@ -6,15 +6,17 @@ local version = 1.3
 ]]
 do
 
+local AUTOUPDATE = true
 local SCRIPT_NAME = "comboLib"
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/LlamaBoL/BoL/master/Common/comboLib.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = LIB_PATH.."comboLib.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+local VERSION_PATH = "LlamaBoL/BoL/master/Version"..SCRIPT_NAME..".version"
 
 if AUTOUPDATE then
-  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/LlamaBoL/BoL/master/Common"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"):CheckUpdate()
-end
+ SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, UPDATE_FILE_PATH, VERSION_PATH):CheckUpdate()
+ end
     -- require"spellDmg"
     local itemArray = {
         { name = "DFG", id = 3128 },
