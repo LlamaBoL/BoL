@@ -4,57 +4,6 @@ Veigar's Super FunHouse! by llama
 
 ]]--
 
---[[
-debugging::
-
-Changed, now works: 
-Farming - Q and W
-UseSpell param1 and param2.
-addParam( might have been spelled wrong some, i dont know.
-DrawNextLvl arguments add (there were none before)
-
-Needs fix/check:
-Spacebar doesnt work at all
-E casting doesnt work at all
-Harass untested
-Github address
-Draw lag free circles
-
-
-Required Libraries:
-comboLib
-VPrediction
-
-
---Added options include
---farmConserveMana      done
---farmConserveManaMax   done
---harassConserveMana    done
---harassConserveManaMax done
---comboMoveToMouse      done
---comboOrbWalk          done
---farmMoveToMouse       done
---farmWithW             done
---harassMoveToMouse     done
---harassUseQ            done
---harassUseW ???        done
---packetCast            done VIP ONLY
---drawLagFree           done
---drawKillableMinions   done
---Damage done drawn on life bar?
---VPrediction           done
---Auto update - need github library and script posted.
---Adjust hotkeys for reflect new options
---Change orbWalking and moveto functions to work without VIP
---Currently, "use packet" option doesn't do anything, make it so VIP users have a choice
---Possible bug: Auto Q minion while kill steal is happening.
---Add auto attack to auto farm OR look into SOW library to do it naturally. My way will be much less accurate.
---Prioritize LARGE MINION when auto farm is on.
--- POSSIBLY use prediction to get predicted minion health in VPrediction
-VP:GetPredictedHealth(unit,time)
-]]
-
-
 if myHero.charName ~= "Veigar" then return end
 
 
@@ -72,7 +21,7 @@ if FileExist(SOURCELIB_PATH) then
   require("SourceLib")
 else
   DOWNLOADING_SOURCELIB = true
-  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() print("Required libraries downloaded successfully, please reload") end)
+  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() PrintChat("Required libraries downloaded successfully, please reload") end)
 end
 
 if AUTOUPDATE then
@@ -155,13 +104,13 @@ function OnLoad()
   VeigarConfig.Farming:addParam("farmConserveManaMax", "Mana % to conserve", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
 
   VeigarConfig.Harass:addParam("harassActive","Harass Enemy (C)",SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
-  VeigarConfig.Harass:addParam("harassUseQ", "Use Q", SCRIPT_PARAM_ONOFF, false)
+  VeigarConfig.Harass:addParam("harassUseQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
   VeigarConfig.Harass:addParam("harassUseW", "Use W", SCRIPT_PARAM_ONOFF,false)
   VeigarConfig.Harass:addParam("harassMoveToMouse","Move to mouse", SCRIPT_PARAM_ONOFF, true)
   VeigarConfig.Harass:addParam("harassConserveMana", "Conserve mana during harass", SCRIPT_PARAM_ONOFF,true)
   VeigarConfig.Harass:addParam("harassConserveManaMax", "Mana % to conserve", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
 
-  VeigarConfig.Drawing:addParam("drawLagFree","Lag free circles", SCRIPT_PARAM_ONOFF,false)
+  VeigarConfig.Drawing:addParam("drawLagFree","Lag free circles", SCRIPT_PARAM_ONOFF,true)
   VeigarConfig.Drawing:addParam("chordLength","Lag Free Chord Length", SCRIPT_PARAM_SLICE, 75, 75, 2000, 0)
   VeigarConfig.Drawing:addParam("drawKillable", "Draw Killable Hero", SCRIPT_PARAM_ONOFF, true)
   VeigarConfig.Drawing:addParam("drawKillableMinions","Draw minion killable with Q", SCRIPT_PARAM_ONOFF, true)
@@ -709,8 +658,7 @@ function OnTick()
   if VeigarConfig.cageTeamActive == true and ts.target ~= nil and not player.dead then
     local spellPos = FindGroupCenterFromNearestEnemies(eradius, erange)
     if spellPos ~= nil then
-
-      UseSpell(SPELL_E, spellPos.center.x, spellPos.center.z)
+      UseSpell(_E, spellPos.center.x, spellPos.center.z)
     end
   end
 
