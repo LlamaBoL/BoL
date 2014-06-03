@@ -15,13 +15,18 @@ local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 local VERSION_PATH = "LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
 local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
-
+local COMBOLIB_PATH = LIB_PATH.."comboLib.lua"
+local COMBOLIB_URL = "https://raw.github.com/LlamaBoL/BoL/master/Common/comboLib.lua".."?rand="..math.random(1,10000)
 
 if FileExist(SOURCELIB_PATH) then
   require("SourceLib")
 else
-  DOWNLOADING_SOURCELIB = true
-  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() PrintChat("Required libraries downloaded successfully, please reload") end)
+  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() PrintChat("SourceLib downloaded, please reload (F9)") end)
+end
+if FileExist(COMBOLIB_PATH) then
+  require("comboLib")
+else
+  DownloadFile(COMBOLIB_URL, COMBOLIB_PATH, function() PrintChat("ComboLib downloaded, please reload (F9)") end)
 end
 
 if AUTOUPDATE then
