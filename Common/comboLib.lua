@@ -12,7 +12,7 @@ local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/LlamaBoL/BoL/master/Common/comboLib.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = LIB_PATH.."comboLib.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-local VERSION_PATH = "LlamaBoL/BoL/master/Version"..SCRIPT_NAME..".version"
+local VERSION_PATH = "LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"
 
 if AUTOUPDATE then
  SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, UPDATE_FILE_PATH, VERSION_PATH):CheckUpdate()
