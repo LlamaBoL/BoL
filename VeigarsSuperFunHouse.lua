@@ -1,4 +1,4 @@
-local version = "3.7c"
+local version = "4.0"
 --[[
 Veigar's Super FunHouse! by llama
 
@@ -63,10 +63,9 @@ local SCRIPT_NAME = "VeigarsSuperFunHouse"
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/LlamaBoL/BoL/master/VeigarsSuperFunHouse.lua".."?rand="..math.random(1,10000)
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-local VERSION_PATH = "LlamaBoL/BoL/master/Version"..SCRIPT_NAME..".version"
+local VERSION_PATH = "LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
 local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
-PrintChat(""..LIB_PATH)
 
 
 if FileExist(SOURCELIB_PATH) then

@@ -1,4 +1,4 @@
-local version = 1.2
+local version = 1.3
 --[[  comboLib.lua v1.3
  
          by llama
