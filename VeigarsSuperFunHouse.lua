@@ -61,8 +61,8 @@ if myHero.charName ~= "Veigar" then return end
 local AUTOUPDATE = true
 local SCRIPT_NAME = "VeigarsSuperFunHouse"
 local UPDATE_HOST = "raw.github.com"
---local UPDATE_PATH = "/Hellsing/BoL/master/common/VPrediction.lua".."?rand="..math.random(1,10000)
---local UPDATE_FILE_PATH = LIB_PATH.."vPrediction.lua"
+local UPDATE_PATH = "/LlamaBoL/BoL/master/VeigarsSuperFunHouse.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = LIB_PATH.."VeigarsSuperFunHouse.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
@@ -78,13 +78,13 @@ else
 end
 
 if AUTOUPDATE then
-  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/Hellsing/BoL/common/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/honda7/BoL/master/VersionFiles/"..SCRIPT_NAME..".version"):CheckUpdate()
+  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/LlamaBoL/BoL/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"):CheckUpdate()
 end
 
 local libDownload = Require("SourceLib")
-libDownload:Add("vPrediction", "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua")
-libDownload:Add("SOW", "https://raw.github.com/honda7/BoL/master/Common/SOW.lua")
-libDownload:Add("comboLib","https://raw.github/llama/BoL/Common/comboLib.lua")
+libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
+libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/Common/comboLib.lua")
 libDownload:Check()
 
 if libDownload.downloadNeeded == true then return end
