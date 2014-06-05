@@ -1,4 +1,4 @@
-local version = "4.0"
+local version = 4.0
 --[[
 Veigar's Super FunHouse! by llama
 
@@ -115,7 +115,7 @@ function OnLoad()
   VeigarConfig.Harass:addParam("harassConserveMana", "Conserve mana during harass", SCRIPT_PARAM_ONOFF,true)
   VeigarConfig.Harass:addParam("harassConserveManaMax", "Mana % to conserve", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
 
-  VeigarConfig.Drawing:addParam("drawLagFree","Lag free circles", SCRIPT_PARAM_ONOFF,true)
+  VeigarConfig.Drawing:addParam("drawLagFree","Lag free circles", SCRIPT_PARAM_ONOFF, false)
   VeigarConfig.Drawing:addParam("chordLength","Lag Free Chord Length", SCRIPT_PARAM_SLICE, 75, 75, 2000, 0)
   VeigarConfig.Drawing:addParam("drawKillable", "Draw Killable Hero", SCRIPT_PARAM_ONOFF, true)
   VeigarConfig.Drawing:addParam("drawKillableMinions","Draw minion killable with Q", SCRIPT_PARAM_ONOFF, true)
