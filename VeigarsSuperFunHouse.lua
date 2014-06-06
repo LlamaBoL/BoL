@@ -1,5 +1,6 @@
-local version = 4.0
+local version = 4.1
 --[[
+
 Veigar's Super FunHouse! by llama
 
 ]]--
@@ -17,31 +18,42 @@ local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common
 local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
 local COMBOLIB_PATH = LIB_PATH.."comboLib.lua"
 local COMBOLIB_URL = "https://raw.github.com/LlamaBoL/BoL/master/Common/comboLib.lua".."?rand="..math.random(1,10000)
+local DownloadSourceLib = false
+local DownloadComboLib = false
 
-if FileExist(SOURCELIB_PATH) then
-  require("SourceLib")
-else
-  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() PrintChat("SourceLib downloaded, please reload (F9)") end)
-end
-if FileExist(COMBOLIB_PATH) then
-  require("comboLib")
-else
-  DownloadFile(COMBOLIB_URL, COMBOLIB_PATH, function() PrintChat("ComboLib downloaded, please reload (F9)") end)
-end
-
-if AUTOUPDATE then
-  SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, VERSION_PATH):CheckUpdate()
-end
-
-local libDownload = Require("SourceLib")
-libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
-libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
-libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/master/Common/comboLib.lua")
-libDownload:Check()
-
-if libDownload.downloadNeeded == true then return end
 
 function OnLoad()
+
+  if FileExist(SOURCELIB_PATH) then
+    require("SourceLib")
+  else
+    DownloadSourceLib = true
+    DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() PrintChat("SourceLib downloaded, please reload (F9)") end)
+  end
+  if FileExist(COMBOLIB_PATH) then
+    require("comboLib")
+  else
+    DownloadComboLib = true
+    DownloadFile(COMBOLIB_URL, COMBOLIB_PATH, function() PrintChat("ComboLib downloaded, please reload (F9)") end)
+  end
+
+  if DownloadSourceLib or DownloadComboLib then print("Downloading required libraries, please wait...") return end
+
+  if AUTOUPDATE then
+    SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, VERSION_PATH):CheckUpdate()
+  end
+
+  local libDownload = Require("SourceLib")
+  libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
+  libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+  libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/master/Common/comboLib.lua")
+  libDownload:Check()
+
+  if libDownload.downloadNeeded == true then return end
+
+
+
+
   player = myHero
 
   spaceHK = 32 --hk for "spacebar" by default.
@@ -225,7 +237,7 @@ function autoHarass()
       if myHero:CanUseSpell(_W) == READY and ts.target and targetvalid(ts.target,wrange) and GetDistance(ts.target) <= wrange then
         local spellPos, hitchance = VP:GetCircularCastPosition(ts.target, wcastspeed, wradius, wrange)
         if spellPos and hitchance >= 3 then
-         --CastSpell(_W, spellPos.x, spellPos.z)
+          --CastSpell(_W, spellPos.x, spellPos.z)
           UseSpell(_W, spellPos.x, spellPos.z)
         end
       end
@@ -530,7 +542,7 @@ function CustomDrawCircle(x, y, z, radius, color)
   local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
   local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
 
-  if not VeigarConfig.Drawing.drawLagFree then  
+  if not VeigarConfig.Drawing.drawLagFree then
 
     return DrawCircle(x, y, z, radius, color)
   end
