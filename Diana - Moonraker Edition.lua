@@ -127,6 +127,7 @@ local wallJumps = {}
 function OnLoad()
 
 
+--[[ Auto Update ]]--
 
   if FileExist(SOURCELIB_PATH) then
     require("SourceLib")
@@ -144,7 +145,6 @@ function OnLoad()
   local libDownload = Require("SourceLib")
   libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
   libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
-  libDownload:Add("comboLib","https://raw.github/LlamaBoL/BoL/master/Common/comboLib.lua")
   libDownload:Check()
 
   if libDownload.downloadNeeded == true then return end
