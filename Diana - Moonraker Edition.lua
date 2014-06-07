@@ -1,4 +1,4 @@
-local version = 2.0
+local version = 2.1
 -- Diana  Moonraker edition
 
 --[[
@@ -171,7 +171,7 @@ function OnLoad()
   DCConfig:addSubMenu("Normal Combo","NormalCombo")
   DCConfig:addSubMenu("Misaya Combo","MisayaCombo")
   DCConfig:addSubMenu("Kill Steal","KillSteal")
-  DCConfig:addSubMenu("Harass","Harass")
+  DCConfig:addSubMenu("Harass","Harassing")
   DCConfig:addSubMenu("Farming","Farming")
   DCConfig:addSubMenu("Jungle","Jungle")
   DCConfig:addSubMenu("Drawing","Drawing")
@@ -199,10 +199,10 @@ function OnLoad()
   DCConfig.KillSteal:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, false)
   --DCConfig.KillSteal:addParam("useMisaya", "Use Misaya", SCRIPT_PARAM_ONOFF, false)
 
-  DCConfig.Harass:addParam("enabled", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
-  DCConfig.Harass:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
-  DCConfig.Harass:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
-  DCConfig.Harass:addParam("moveToMouse", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+  DCConfig.Harassing:addParam("enabled", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
+  DCConfig.Harassing:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
+  --DCConfig.Harassing:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, false)
+  DCConfig.Harassing:addParam("moveToMouse", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
 
 
   DCConfig.Farming:addParam("autoMinion", "Q Minions", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -238,7 +238,7 @@ function OnLoad()
 
   --DCConfig.NormalCombo:permaShow("BurstCombo")
   --DCConfig.MisayaCombo:permaShow("BurstCombo")
-  --DCConfig.Harass:permaShow("enabled")
+  --DCConfig.Harassing:permaShow("enabled")
 
 
 
@@ -331,9 +331,9 @@ function OnTick()
   end
 
   --[[   Harass  ]] --
-  if DCConfig.Harass.enabled and ts.target and qPred and GetDistance(qPred) < rangeMax then
+  if DCConfig.Harassing.enabled and ts.target and qPred and GetDistance(qPred) < rangeMax then
     Harass(ts.target)
-  elseif DCConfig.Harass.enabled and heroCanMove() and DCConfig.Harass.moveToMouse then
+  elseif DCConfig.Harassing.enabled and heroCanMove() and DCConfig.Harassing.moveToMouse then
     moveToMouse()
   end
 
@@ -1064,7 +1064,7 @@ function BurstCombo(target)
 end
 
 function Harass(target)
-  if qPred and QREADY and GetDistance(qPred) <= DCConfig.Misc.rangeMax and DCConfig.Harass.useQ then
+  if qPred and QREADY and GetDistance(qPred) <= DCConfig.Misc.rangeMax and DCConfig.Harassing.useQ then
     CrescentCollision(MODE_CHAMP)
     if highestCollision > 0 then
       UseSpell(_Q, myHero.x + highestRange * math.cos(highestAngle), myHero.z + highestRange * math.sin(highestAngle))
@@ -1072,10 +1072,10 @@ function Harass(target)
       UseSpell(_Q, qPred.x, qPred.z)
     end
   end
-  if WREAD and GetDistance(target) <= wRange and DCConfig.Harass.useW then
+  if WREAD and GetDistance(target) <= wRange and DCConfig.Harassing.useW then
     UseSpell(_W)
   end
-  if DCConfig.Harass.moveToMouse and not _G.evade then
+  if DCConfig.Harassing.moveToMouse and not _G.evade then
     moveToMouse()
   end
 end
