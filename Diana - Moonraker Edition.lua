@@ -1,4 +1,4 @@
-local version = 2.1
+local version = 2.2
 -- Diana  Moonraker edition
 
 --[[
@@ -222,7 +222,7 @@ function OnLoad()
   DCConfig.Drawing:addParam("drawCirclesEnemy", "Draw Circles - Enemy", SCRIPT_PARAM_ONOFF, true)
   DCConfig.Drawing:addParam("drawCirclesMinions","Draw Circles - Minions",SCRIPT_PARAM_ONOFF,true)
   DCConfig.Drawing:addParam("drawText", "Draw Text - Enemy", SCRIPT_PARAM_ONOFF, true)
-  DCConfig.Drawing:addParam("wallJumps", "Draw Wall Jumps", SCRIPT_PARAM_ONOFF, false)
+  DCConfig.Drawing:addParam("wallJumps", "Draw Wall Jumps", SCRIPT_PARAM_ONOFF, true)
 
 
   DCConfig.Misc:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
@@ -354,7 +354,7 @@ function UseSpell(Spell,param1,param2)
     elseif param1 then
       Packet("S_CAST", {spellId = Spell, targetNetworkId = param1.networkID}):send()
     else
-      Packet("S_CAST", {spellID = Spell, targetNetworkID = myHero.networkID}):send()
+      Packet("S_CAST", {spellId = Spell, toX = myHero.x, toY = myHero.z, fromX = myHero.x, fromY = myHero.z, targetNetworkId = myHero.networkID}):send()
     end
   else
     if param1 and param2 then
