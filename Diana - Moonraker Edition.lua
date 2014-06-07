@@ -160,7 +160,7 @@ function OnLoad()
 
   for i = 0, objManager.maxObjects do
     local object = objManager:getObject(i)
-    if object and object.name and string.find(object.name,"Camp") then
+    if object and object.name and string.find(object.name,"monsterCamp_") then
       table.insert(wallJumps,object)
     end
     if isJungleMinion(object) then
