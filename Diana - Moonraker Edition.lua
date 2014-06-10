@@ -1,4 +1,4 @@
-local version = 2.2
+local version = 2.3
 -- Diana  Moonraker edition
 
 --[[
@@ -19,19 +19,10 @@ a new velocity and qdelay*2.5 or so.
 
 if myHero.charName ~= "Diana" then return end
 
---[[ Auto Update ]]--
-local AUTOUPDATE = true
-local SCRIPT_NAME = "Diana - Moonraker Edition"
-local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/LlamaBoL/BoL/master/Diana - Moonraker Edition.lua".."?rand="..math.random(1,10000)
-local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-local VERSION_PATH = "LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"
-local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
-local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
-
 
 
 --[[   Vars  ]] --
+
 local thetaIterator = 4 --increase to improve performance (0 - 10)
 local rangeIterator = 30 --increase to improve performance (from 0-100)
 local roundRange = 100 --higher means more minions collected, but possibly less accurate.
@@ -47,7 +38,7 @@ local ts
 local qRange = 900
 local aaRange = 400
 local wRange = 250
-local eRange = 410
+local eRange = 450
 local eBuffer = 225
 local rRange = 825
 
@@ -71,7 +62,7 @@ local BRKREADY, DFGREADY, HXGREADY, BWCREADY, TMTREADY, RAHREADY, RNDREADY, YGBR
 --------------------------
 --[[  Q Calculations  ]] --
 local rangeMax = 830 --default
-local qDelay = 0.25 --seconds
+local qDelay = 0.35 --seconds
 local qSpeed = 1800
 local qWidth = 10
 local enemyMinions = {}
@@ -90,15 +81,7 @@ local swingDelay = 1000
 local useRTimeout = 3000
 local useRTimer = 0
 
-function GetDistance(p1, p2)
-  if (p1 and p2 and p1.x and p1.z and p2.x and p2.z) then
-    return math.sqrt((p1.x-p2.x)^2+(p1.z-p2.z)^2)
-  elseif (p1 and p1.x and p1.z) then
-    return math.sqrt((myHero.x-p1.x)^2+(myHero.z-p1.z)^2)
-  else
-    return math.huge
-  end
-end
+
 
 local HitBoxSize = GetDistance(myHero.minBBox)
 local shotFired = false
@@ -122,12 +105,20 @@ local jumpTargetTimeout = 2000
 local wallJumps = {}
 
 
---require"VPrediction"
+local DownloadSourceLib = false
+local prodictionLoaded = false
 
-function OnLoad()
 
+function autoUpdate()
 
---[[ Auto Update ]]--
+  AUTOUPDATE = true
+  SCRIPT_NAME = "Diana - Moonraker Edition"
+  UPDATE_HOST = "raw.github.com"
+  UPDATE_PATH = "/LlamaBoL/BoL/master/Diana - Moonraker Edition.lua".."?rand="..math.random(1,10000)
+  UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+  VERSION_PATH = "LlamaBoL/BoL/master/Version/"..SCRIPT_NAME..".version"
+  SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
+  SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
 
   if FileExist(SOURCELIB_PATH) then
     require("SourceLib")
@@ -142,14 +133,32 @@ function OnLoad()
     SourceUpdater(SCRIPT_NAME, version, UPDATE_HOST,UPDATE_PATH, SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, VERSION_PATH):CheckUpdate()
   end
 
-  local libDownload = Require("SourceLib")
+  libDownload = Require("SourceLib")
   libDownload:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
   libDownload:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
   libDownload:Check()
 
   if libDownload.downloadNeeded == true then return end
 
+  if VIP_USER then
+    if FileExist(SCRIPT_PATH..'Common/Prodiction.lua') then
+      require "Prodiction"
+      prodictionLoaded = true
+    end
+  end
+end
 
+function GetDistance(p1, p2)
+  if (p1 and p2 and p1.x and p1.z and p2.x and p2.z) then
+    return math.sqrt((p1.x-p2.x)^2+(p1.z-p2.z)^2)
+  elseif (p1 and p1.x and p1.z) then
+    return math.sqrt((myHero.x-p1.x)^2+(myHero.z-p1.z)^2)
+  else
+    return math.huge
+  end
+end
+
+function initMinions()
 
   enemyMinions = minionManager(MINION_ENEMY, rangeMax, player, MINION_SORT_HEALTH_ASC)
   jungleMinions = minionManager(MINION_JUNGLE, rangeMax, player, MINION_SORT_HEALTH_ASC)
@@ -167,6 +176,11 @@ function OnLoad()
       table.insert(JungleMonsters, object)
     end
   end
+
+end
+
+function initMenu()
+
   DCConfig = scriptConfig("Diana Combo", "DianaCombo")
   DCConfig:addSubMenu("Normal Combo","NormalCombo")
   DCConfig:addSubMenu("Misaya Combo","MisayaCombo")
@@ -177,6 +191,7 @@ function OnLoad()
   DCConfig:addSubMenu("Drawing","Drawing")
   DCConfig:addSubMenu("Misc","Misc")
   DCConfig:addSubMenu("Performance/Accuracy","Performance")
+  DCConfig:addSubMenu("Prediction","Prediction")
 
 
   DCConfig.NormalCombo:addParam("BurstCombo", "Full Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
@@ -223,51 +238,71 @@ function OnLoad()
   DCConfig.Drawing:addParam("drawCirclesMinions","Draw Circles - Minions",SCRIPT_PARAM_ONOFF,true)
   DCConfig.Drawing:addParam("drawText", "Draw Text - Enemy", SCRIPT_PARAM_ONOFF, true)
   DCConfig.Drawing:addParam("wallJumps", "Draw Wall Jumps", SCRIPT_PARAM_ONOFF, true)
-
+  --DCConfig.Drawing:addParam("debug1111", "Color Picker", SCRIPT_PARAM_COLOR, {255, 255, 255, 255})
 
   DCConfig.Misc:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
-  DCConfig.Misc:addParam("rangeMax","Max Range for Q",SCRIPT_PARAM_SLICE,rangeMax,1,830,0) --might not work?
+  DCConfig.Misc:addParam("rangeMax","Max Range for Q",SCRIPT_PARAM_SLICE,rangeMax,1,830,0)
   DCConfig.Misc:addParam("jumpMouseDistance","Jump Mouse Distance",SCRIPT_PARAM_SLICE,jumpMouseDistance,1,600,0)
   DCConfig.Misc:addParam("usePacket", "Use Packets (VIP only)", SCRIPT_PARAM_ONOFF, true)
-
 
   DCConfig.Performance:addParam("info1"," Increase will INCREASE performance but LOWER accuracy",SCRIPT_PARAM_INFO,"")
   DCConfig.Performance:addParam("thetaIterator","Theta",SCRIPT_PARAM_SLICE,thetaIterator,1,10,0)
   DCConfig.Performance:addParam("rangeIterator","Range",SCRIPT_PARAM_SLICE,rangeIterator,1,100,0)
   DCConfig.Performance:addParam("roundRange","Rounding",SCRIPT_PARAM_SLICE,roundRange,1,200,0)
 
-  --DCConfig.NormalCombo:permaShow("BurstCombo")
-  --DCConfig.MisayaCombo:permaShow("BurstCombo")
-  --DCConfig.Harassing:permaShow("enabled")
+  if VIP_USER and prodictionLoaded then
+    DCConfig.Prediction:addParam("predictionList", "Type", SCRIPT_PARAM_LIST, 3, {"FreePrediction", "VPrediction", "Prodiction"})
+  else
+    DCConfig.Prediction:addParam("predictionList", "Type", SCRIPT_PARAM_LIST, 2, {"FreePrediction","VPrediction"})
+  end
 
 
+end
 
-  ts = TargetSelector(TARGET_LOW_HP_PRIORITY, (rRange), DAMAGE_MAGIC)
+function initPrediction()
+
+  if prodictionLoaded then
+    Prodiction = ProdictManager.GetInstance()
+    ProdictionQ = Prodiction:AddProdictionObject(_Q, qRange, qSpeed, qDelay, qWidth)
+  end
+  FreePredictionQ = TargetPrediction(qRange, (qSpeed / 1000), (qDelay * 1000), qWidth)
+  VP = VPrediction()
+
+  ts = TargetSelector(TARGET_LOW_HP_PRIORITY, rRange, DAMAGE_MAGIC)
   ts.name = "Diana"
   DCConfig:addTS(ts)
+
+end
+
+function initSpellData()
+
+  if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then ignite = SUMMONER_1
+  elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then ignite = SUMMONER_2
+  end
+
+end
+
+function OnLoad()
+
+
+  autoUpdate()
+  initMinions()
+  initMenu()
+  initPrediction()
+  initSpellData()
 
   for i = 1, heroManager.iCount do
     MoonLightEnemy[i] = 0
     waittxt[i] = i * 3
   end
 
-  if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then ignite = SUMMONER_1
-  elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then ignite = SUMMONER_2
-  end
-
-  VP = VPrediction()
-
-  PrintChat("Diana - Moonraker Edition v2 loaded!")
+  PrintChat("Diana - Moonraker Edition v"..version.." loaded!")
 end
 
 function OnTick()
   qPred = nil
 
-  for i = 1, #JungleMonsters do
-    if not JungleMonsters[i] or not JungleMonsters[i].health or math.floor(JungleMonsters[i].health) == 0 then
-      table.remove(JungleMonsters,i)
-    end
-  end
+  cleanJungleData()
 
   if GetTickCount() - animationTimer > AttackDelayLatency then
     animationEnd = false
@@ -275,34 +310,21 @@ function OnTick()
   AttackDelayLatency = ((1000 * (-0.435 + (0.625 / 0.625))) / (myHero.attackSpeed / (1 / 0.625))) - GetLatency() * 2
 
   ts:update()
-
   ReadyCheck()
+
   if ts.target and GetDistance(ts.target) < rangeMax*2 then
-    local hitChance, position, castPosition
-    castPosition,hitChance,position = VP:GetLineCastPosition(ts.target,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
-    if castPosition and hitChance and hitChance >= 2 then
-      qPred = castPosition
-    end
+    qPred = getQPrediction(ts.target)
   end
 
   --[[ Minion Farm ]]--
   if DCConfig.Farming.autoMinion then
-    enemyMinions:update()
-    CrescentCollision(MODE_MINION)
-    if highestCollision > 0 and highestRange > 0 then
-      UseSpell(_Q, myHero.x + highestRange * math.cos(highestAngle), myHero.z + highestRange * math.sin(highestAngle))
-    elseif #enemyMinions.objects == 1 then
-      UseSpell(_Q, enemyMinions.objects[1].x, enemyMinions.objects[1].z)
-    end
+    minionFarm()
   end
 
   --[[ Jungle Farm ]]--
   if DCConfig.Jungle.enabled then
     jungleFarm()
   end
-
-
-  -- if ts.index ~= nil then MoonLightTS = MoonLightEnemy[ts.index] end
 
 
   --[[Normal and Misaya Combo]]--
@@ -338,11 +360,75 @@ function OnTick()
   end
 
   --[[    Ignite  ]] --
-  if DCConfig.Misc.autoIgnite then
+  if DCConfig.Misc.autoIgnite and ts.target then
     AutoIgnite()
   end
-  if (DCConfig.KillSteal.useR and RREADY) or (DCConfig.KillSteal.useQ and QREADY) then
+  if ts.target and (DCConfig.KillSteal.useR and RREADY) or (DCConfig.KillSteal.useQ and QREADY) then
     ultKillSteal()
+  end
+end
+
+function cleanJungleData()
+  for i = 1, #JungleMonsters do
+    if not JungleMonsters[i] or not JungleMonsters[i].health or math.floor(JungleMonsters[i].health) == 0 then
+      table.remove(JungleMonsters,i)
+    end
+  end
+
+end
+
+function minionFarm()
+
+  enemyMinions:update()
+  CrescentCollision(MODE_MINION)
+  if highestCollision > 0 and highestRange > 0 then
+    UseSpell(_Q, myHero.x + highestRange * math.cos(highestAngle), myHero.z + highestRange * math.sin(highestAngle))
+  elseif #enemyMinions.objects == 1 then
+    UseSpell(_Q, enemyMinions.objects[1].x, enemyMinions.objects[1].z)
+  end
+
+end
+
+function jungleFarm()
+  local jungleTarget = getJungleMonster()
+
+  if jungleTarget and ValidTarget(jungleTarget,rangeMax*2) then
+    if QREADY and DCConfig.Jungle.useQ and GetDistance(jungleTarget) <= qRange then
+      UseSpell(_Q, jungleTarget.x, jungleTarget.z)
+    elseif WREADY and DCConfig.Jungle.useW and GetDistance(jungleTarget) < wRange then
+      UseSpell(_W)
+    elseif RREADY and DCConfig.Jungle.useR and GetDistance(jungleTarget) < rRange and hasMoonLight(jungleTarget) and  (GetTickCount() > useRTimer + useRTimeout) then --will R to target if moonlight buff
+      UseSpell(_R, jungleTarget)
+      moonLight = true
+      useRTimer = GetTickCount()
+    elseif DCConfig.Jungle.orbWalk and GetDistance(jungleTarget) <= getMyTrueRange() then
+      if timeToShoot() or shotFired == true then
+        attackEnemy(jungleTarget)
+      else
+        if heroCanMove() then
+          moveToMouse()
+        end
+      end
+    elseif heroCanMove() and DCConfig.Jungle.orbWalk then
+      moveToMouse()
+    end
+  else --no jungle target visible
+    if DCConfig.Jungle.jumpToMinion and RREADY and QREADY then
+      useQOnHiddenJungleMinion()
+  end
+  if DCConfig.Jungle.orbWalk then
+    moveToMouse()
+  end
+  end
+end
+
+function useQOnHiddenJungleMinion()
+  for i = 1, #wallJumps do
+    if (GetDistance(wallJumps[i],mousePos) < DCConfig.Misc.jumpMouseDistance) and (GetDistance(wallJumps[i]) < qRange+100) and GetDistance(wallJumps[i]) > DCConfig.Misc.jumpMouseDistance then
+      if QREADY and RREADY then
+        UseSpell(_Q, wallJumps[i].x, wallJumps[i].z)
+      end
+    end
   end
 end
 
@@ -350,11 +436,11 @@ function UseSpell(Spell,param1,param2)
 
   if DCConfig.Misc.usePacket and VIP_USER then
     if param1 and param2 then
-      Packet("S_CAST", {spellId = Spell, fromX = param1, fromY = param2, toX = param1, toY = param2}):send()
+      _CastSpellWithPacket(Spell,param1,param2,nil)
     elseif param1 then
-      Packet("S_CAST", {spellId = Spell, targetNetworkId = param1.networkID}):send()
+      _CastSpellWithPacket(Spell,nil,nil,param1)
     else
-      Packet("S_CAST", {spellId = Spell, toX = myHero.x, toY = myHero.z, fromX = myHero.x, fromY = myHero.z, targetNetworkId = myHero.networkID}):send()
+      _CastSpellWithPacket(Spell,nil,nil,myHero)
     end
   else
     if param1 and param2 then
@@ -365,6 +451,43 @@ function UseSpell(Spell,param1,param2)
       CastSpell(Spell)
     end
   end
+end
+
+function _CastSpellWithPacket(mySpell, PosX, PosZ, CUnit)
+  local tnid, tposX, tposZ = nil, nil, nil
+  local cansend = false
+  if PosX ~= nil and PosZ ~= nil then
+    tposX = PosX
+    tposZ = PosZ
+    cansend = true
+  else
+    if CUnit ~= nil then
+      tposX = CUnit.x
+      tposZ = CUnit.z
+      tnid  = CUnit.networkID
+      cansend = true
+    else
+      cansend = false
+    end
+  end
+  if cansend then
+    local CSOpacket = CLoLPacket(153)
+    CSOpacket.dwArg1 = 1
+    CSOpacket.dwArg2 = 0
+    CSOpacket:EncodeF(myHero.networkID)
+    CSOpacket:Encode1(mySpell)
+    CSOpacket:EncodeF(tposX)
+    CSOpacket:EncodeF(tposZ)
+    CSOpacket:EncodeF(tposX)
+    CSOpacket:EncodeF(tposZ)
+    if tnid~=nil then
+      CSOpacket:EncodeF(tnid)
+    else
+      CSOpacket:EncodeF(0)
+    end
+    SendPacket(CSOpacket)
+  end
+  if not cansend then print("<font color='#F72828'>[CSOP][ERROR]Failed</font>") end
 end
 
 function MisayaCombo(target)
@@ -424,64 +547,18 @@ function attackEnemy(enemy)
   shotFired = true
 end
 
-function jungleFarm()
-  local jungleTarget = getJungleMonster()
-
-  if jungleTarget and ValidTarget(jungleTarget,rangeMax*2) then
-    if QREADY and DCConfig.Jungle.useQ and GetDistance(jungleTarget) <= qRange then
-      UseSpell(_Q, jungleTarget.x, jungleTarget.z)
-    elseif WREADY and DCConfig.Jungle.useW and GetDistance(jungleTarget) < wRange then
-      UseSpell(_W)
-    elseif RREADY and DCConfig.Jungle.useR and GetDistance(jungleTarget) < rRange and hasMoonLight(jungleTarget) and  (GetTickCount() > useRTimer + useRTimeout) then --will R to target if moonlight buff
-      UseSpell(_R, jungleTarget)
-      moonLight = true
-      useRTimer = GetTickCount()
-    elseif DCConfig.Jungle.orbWalk and GetDistance(jungleTarget) <= getMyTrueRange() then
-      if timeToShoot() or shotFired == true then
-        attackEnemy(jungleTarget)
-      else
-        if heroCanMove() then
-          moveToMouse()
-        end
-      end
-    elseif heroCanMove() and DCConfig.Jungle.orbWalk then
-      moveToMouse()
-    end
-  else --no jungle target visible
-    if DCConfig.Jungle.jumpToMinion and RREADY and QREADY then
-      useQOnHiddenJungleMinion()
-  end
-  if DCConfig.Jungle.orbWalk then
-    moveToMouse()
-  end
-  end
-end
-
-function useQOnHiddenJungleMinion()
-  for i = 1, #wallJumps do
-    if (GetDistance(wallJumps[i],mousePos) < DCConfig.Misc.jumpMouseDistance) and (GetDistance(wallJumps[i]) < qRange+100) and GetDistance(wallJumps[i]) > DCConfig.Misc.jumpMouseDistance then
-      if QREADY and RREADY then
-        UseSpell(_Q, wallJumps[i].x, wallJumps[i].z)
-      end
-    end
-  end
-end
-
 function findMinionBetweenTarget(target)
 
   local jumpOptions = {}
   local jumpTarget
   local wallJumpFlag = false
-  local castPos, hitChance, position
 
   for i = 1, heroManager.iCount do  --find champs in middle of target
     local jumpTarget = heroManager:GetHero(i)
     if ValidTarget(jumpTarget) then
-      castPos,hitChance,position = VP:GetLineCastPosition(jumpTarget,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
-      if castPos and hitChance and hitChance >= 2 then
-        if (GetDistance(castPos) < rRange) and (GetDistance(castPos,target) < rRange) then
-          return castPos, wallJumpFlag
-        end
+      local castPos = getQPrediction(jumpTarget)
+      if castPos and (GetDistance(castPos) < rRange) and (GetDistance(castPos,jumpTarget) < rRange) then
+        return castPos, wallJumpFlag
       end
     end
   end
@@ -497,14 +574,11 @@ function findMinionBetweenTarget(target)
   enemyMinions:update()
   for i = 1, #enemyMinions do  --find minion targets in middle of target
     jumpTarget = enemyMinions.object[i]
-    castPos,hitChance,position = VP:GetLineCastPosition(jumpTarget,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
-    if castPos and hitChance and hitChance >= 2 then
-      if (GetDistance(castPos) < rRange) and (GetDistance(castPos,target) < rRange) then
-        return jumpTarget, wallJumpFlag
-      end
+    local castPos = getQPrediction(jumpTarget)
+    if castPos and (GetDistance(castPos) < rRange) and (GetDistance(castPos,jumpTarget) < rRange) then
+      return castPos, wallJumpFlag
     end
   end
-
 end
 
 function requiresJumpToTarget(target)
@@ -789,13 +863,16 @@ function OnDraw()
       CustomDrawCircle(ts.target.x, ts.target.y, ts.target.z, 40 + j * 1.5, drawKillColor)
     end
   end
-  if DCConfig.Drawing.drawCirclesMinions and QREADY then
+  if DCConfig.Drawing.drawCirclesMinions then
     enemyMinions:update()
     if enemyMinions.objects[1] then
       local targetMinion = enemyMinions.objects[1]
       if ValidTarget(targetMinion, DCConfig.Misc.rangeMax) then --and string.find(targetMinion.name, "Minion_") then
-        if targetMinion.health < getDmg("Q",targetMinion, myHero) then
+        if QREADY and targetMinion.health < getDmg("Q",targetMinion, myHero) then
           CustomDrawCircle(targetMinion.x,targetMinion.y,targetMinion.z, 150, drawKillMinionColor)
+      end
+      if targetMinion.health < getDmg("AD", targetMinion, myHero) then
+        CustomDrawCircle(targetMinion.x,targetMinion.y,targetMinion.z, 100, drawKillMinionColor)
       end
       end
     end
@@ -857,10 +934,9 @@ function CrescentCollision(mode)
     for i = 1, heroManager.iCount do
       local hero = heroManager:GetHero(i)
       if ValidTarget(hero, DCConfig.Misc.rangeMax) then
-        local dis,hitChance,position
-        dis,hitChance,position = VP:GetLineCastPosition(hero,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
-        if dis and hitChance and hitChance >= 2 then
-          table.insert(targetArray, dis)
+        local castPos = getQPrediction(hero)
+        if castPos then
+          table.insert(targetArray,castPos)
         end
       end
     end
@@ -926,17 +1002,36 @@ function CrescentCollision(mode)
 end
 
 function AutoIgnite()
-  if IREADY then
+  if IREADY and not QREADY then
     local ignitedmg = 0
     for i = 1, heroManager.iCount, 1 do
       local enemyhero = heroManager:getHero(i)
-      if ValidTarget(enemyhero, 600) then
+      if ValidTarget(enemyhero, 600) and GetDistance(enemyHero) > getMyTrueRange() then
         ignitedmg = 50 + 20 * myHero.level
         if enemyhero.health <= ignitedmg then
-          UseSpell(ignite, enemyhero)
+          CastSpell(ignite, enemyhero)
         end
       end
     end
+  end
+end
+
+function getQPrediction(target)
+
+  local castPos,hitChance,position
+
+
+  if DCConfig.Prediction.predictionList == 1 then
+    castPos = FreePredictionQ:GetPrediction(target)
+  elseif DCConfig.Prediction.predictionList == 2 then
+    castPos, hitChance, position = VP:GetLineCastPosition(target,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
+  elseif DCConfig.Prediction.predictionList == 3 and prodictionLoaded then
+    castPos = ProdictionQ:GetPrediction(target)
+  end
+  if (hitChance and hitChance >= 2) or not hitchance then
+    return castPos
+  else
+    return nil
   end
 end
 
@@ -946,12 +1041,12 @@ function ultKillSteal()
     local enemyHero = heroManager:getHero(i)
 
     if ValidTarget(enemyHero, rRange) then
-      local castPos,hitChance,position
-      castPos,hitChance,position = VP:GetLineCastPosition(enemyHero,qDelay,qWidth,DCConfig.Misc.rangeMax,qSpeed,myHero,false)
+
+      local castPos = getQPrediction(enemyHero)
 
       if (QREADY and DCConfig.KillSteal.useQ) and (RREADY and DCConfig.KillSteal.useR) then --R and Q kill steal
-        if castPos and hitChance and hitChance >= 2 and GetDistance(castPos) < rangeMax then
-          local totalDmg = getDmg("Q", enemyHero, myHero) + getDmg("R", enemyHero, myHero, 1)
+        if castPos and GetDistance(castPos) < rangeMax then
+          local totalDmg = getDmg("Q", enemyHero, myHero) + getDmg("R", enemyHero, myHero, 1) + getDmg("AD",enemyHero,myHero)
           if enemyHero.health <= totalDmg then
             UseSpell(_R,enemyHero)
             UseSpell(_Q,castPos.x, castPos.z)
@@ -959,13 +1054,13 @@ function ultKillSteal()
       end
       end
       if QREADY and DCConfig.KillSteal.useQ then   --Q kill steal
-        if castPos and hitChance and hitChance >=2 and GetDistance(castPos) < rangeMax then
+        if castPos then
           if enemyHero.health <= getDmg("Q", enemyHero, myHero) then
             UseSpell(_Q, castPos.x, castPos.z)
           end
       end
       if RREADY and DCConfig.KillSteal.useR then  --R kill steal
-        if enemyHero.health <= getDmg("R", enemyHero, myHero, 1) then
+        if enemyHero.health <= (getDmg("R", enemyHero, myHero, 1) + getDmg("AD", enemyHero,myHero)) then
           UseSpell(_R, enemyHero)
       end
       end
